@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker | Equity Plus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #06080c;
+            --bg-card: rgba(21, 25, 33, 0.8);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-main: #f8fafc;
+        }
+
+        /* 30 AESTHETIC THEMES */
+        body.theme-midnight { --accent: #6366f1; --bg-deep: #06080c; }
+        body.theme-emerald { --accent: #10b981; --bg-deep: #06100b; }
+        body.theme-rose { --accent: #f43f5e; --bg-deep: #100607; }
+        body.theme-amber { --accent: #f59e0b; --bg-deep: #100b06; }
+        body.theme-cyan { --accent: #06b6d4; --bg-deep: #060e10; }
+        body.theme-violet { --accent: #8b5cf6; --bg-deep: #0b0610; }
+        body.theme-crimson { --accent: #e11d48; --bg-deep: #0f0507; }
+        body.theme-lime { --accent: #84cc16; --bg-deep: #0a1006; }
+        body.theme-fuchsia { --accent: #d946ef; --bg-deep: #0f0610; }
+        body.theme-slate { --accent: #64748b; --bg-deep: #0f172a; }
+        body.theme-gold { --accent: #fbbf24; --bg-deep: #1a140a; }
+        body.theme-sky { --accent: #0ea5e9; --bg-deep: #08121a; }
+        body.theme-dracula { --accent: #bd93f9; --bg-deep: #282a36; }
+        body.theme-nord { --accent: #88c0d0; --bg-deep: #2e3440; }
+        body.theme-ocean { --accent: #0077b6; --bg-deep: #023e8a; }
+        body.theme-sunset { --accent: #ff4d6d; --bg-deep: #250902; }
+        body.theme-forest { --accent: #2d6a4f; --bg-deep: #081c15; }
+        body.theme-cyberpunk { --accent: #00ff9f; --bg-deep: #1a1a1a; }
+        body.theme-synthwave { --accent: #ff71ce; --bg-deep: #241744; }
+        body.theme-nebula { --accent: #7b2cbf; --bg-deep: #10002b; }
+        body.theme-sakura { --accent: #ffb7c5; --bg-deep: #1d1012; }
+        body.theme-coffee { --accent: #a68a64; --bg-deep: #2b2118; }
+        body.theme-mint { --accent: #b7e4c7; --bg-deep: #081c15; }
+        body.theme-blood { --accent: #9d0208; --bg-deep: #03071e; }
+        body.theme-ghost { --accent: #ffffff; --bg-deep: #000000; }
+        body.theme-toxic { --accent: #ccff00; --bg-deep: #0d1a00; }
+        body.theme-electric { --accent: #3a86ff; --bg-deep: #020122; }
+        body.theme-vintage { --accent: #e07a5f; --bg-deep: #3d405b; }
+        body.theme-malibu { --accent: #4cc9f0; --bg-deep: #3f37c9; }
+        body.theme-lava { --accent: #ffb703; --bg-deep: #fb8500; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 0% 0%, var(--accent) 0%, transparent 40%),
+                        radial-gradient(circle at 100% 100%, var(--accent) 0%, transparent 40%),
+                        radial-gradient(circle at 50% 50%, var(--bg-deep) 0%, #000 100%);
+            opacity: 0.6;
+            transition: all 0.8s ease;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            box-shadow: 0 10px 15px -3px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+
+        .btn-accent:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+        .premium-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        select.premium-input {
+            color: white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+        }
+
+        select.premium-input option {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .premium-input:focus { border-color: var(--accent); outline: none; background: rgba(255, 255, 255, 0.08); }
+
+        #settingsMenu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 300px;
+            z-index: 100;
+            margin-top: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .theme-swatch {
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .theme-swatch:hover { transform: scale(1.2); border-color: white; }
+
+        #smsNotification {
+            position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 380px; background: white; padding: 16px; border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 14px;
+            z-index: 10000; transition: top 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28); color: #1a1a1a;
+            cursor: pointer;
+        }
+        #smsNotification.active { top: 20px; }
+
+        .ledger-container::-webkit-scrollbar { width: 4px; }
+        .ledger-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .hidden-view { display: none !important; }
+        
+        .type-pill {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="theme-midnight">
+
+    <div id="authBg" class="auth-bg"></div>
+
+    <!-- SMS NOTIFICATION -->
+    <div id="smsNotification" onclick="this.classList.remove('active')">
+        <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0 text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
+        <div>
+            <span class="text-[10px] font-black uppercase text-indigo-600">Messages • Now</span>
+            <p class="text-xs font-semibold text-slate-800" id="smsText">Your Recovery Code is <span class="bg-indigo-100 px-2 rounded font-mono" id="otpDisplay">000000</span>.</p>
+        </div>
+    </div>
+
+    <!-- AUTH PAGE -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center p-6">
+        <div class="w-full max-w-md glass-card p-10 rounded-[2.5rem]">
+            <div id="loginMainUI">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl font-black mb-2">Sign In</h1>
+                    <p class="text-slate-400 text-sm">Welcome Sir</p>
+                </div>
+                <form id="loginForm" class="space-y-6">
+                    <input type="text" id="usernameInput" value="Aryansh" class="premium-input w-full py-4 px-5 rounded-2xl">
+                    <div class="relative">
+                        <input type="password" id="passwordInput" placeholder="Security Key" class="premium-input w-full py-4 px-5 rounded-2xl">
+                        <button type="button" onclick="showRecoveryUI()" class="absolute right-4 top-4 text-[10px] font-bold text-indigo-400 uppercase">Forgot?</button>
+                    </div>
+                    <button type="submit" class="btn-accent w-full py-4 rounded-2xl font-bold text-white text-lg">Login</button>
+                </form>
+            </div>
+            <div id="recoveryUI" class="hidden">
+                <button onclick="hideRecoveryUI()" class="text-slate-500 mb-6 text-xs font-bold uppercase">← Back</button>
+                <div id="recoveryStep1">
+                    <div class="text-center mb-6">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Identity Verification</p>
+                        <h2 class="text-lg font-black text-white">Enter Secret Code</h2>
+                    </div>
+                    <input type="password" id="secretCodeInput" maxlength="4" placeholder="4-Digit Code" class="premium-input w-full py-4 px-5 rounded-2xl mb-4 text-center tracking-[1em] font-black">
+                    <button onclick="verifySecretCodeAndSendOTP()" class="btn-accent w-full py-4 rounded-2xl font-bold text-white uppercase text-xs tracking-widest">Verify Identity</button>
+                </div>
+                <div id="recoveryStep2" class="hidden">
+                    <div class="text-center mb-6">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">OTP Sent to Linked Phone</p>
+                        <h2 class="text-lg font-black text-white">Enter Security Code</h2>
+                    </div>
+                    <input type="text" id="otpInput" placeholder="0 0 0 0 0 0" class="premium-input w-full py-4 px-5 rounded-2xl mb-4 text-center tracking-widest font-black text-xl">
+                    <button onclick="verifyOTP()" class="btn-accent w-full py-4 rounded-2xl font-bold text-white uppercase text-xs tracking-widest">Confirm Access</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardPage" class="hidden-view">
+        <nav class="p-6 border-b border-white/5 flex justify-between items-center bg-black/20 backdrop-blur-xl sticky top-0 z-50">
+            <div class="relative" id="settingsContainer">
+                <button onclick="toggleSettings(event)" class="flex items-center gap-3 group">
+                    <div class="p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </div>
+                    <span id="dynamicGreeting" class="text-lg font-black tracking-tight text-white uppercase transition-opacity duration-500">
+                        WELCOME <span style="color: var(--accent);">ARYANSH</span>
+                    </span>
+                </button>
+                
+                <div id="settingsMenu" class="glass-card p-6 rounded-3xl shadow-2xl" onclick="event.stopPropagation()">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Aesthetic Palette (30)</p>
+                    <div id="swatchContainer" class="grid grid-cols-6 gap-3 mb-6"></div>
+                    <hr class="border-white/5 mb-4">
+                    <button onclick="exportToCSV()" class="w-full text-left py-2 text-sm font-bold flex items-center gap-2 hover:text-[var(--accent)] text-slate-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12 a2 2 0 002-2v-1M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+                        Export to Excel (.csv)
+                    </button>
+                    <button onclick="handleLogout()" class="w-full text-left py-2 text-sm font-bold text-rose-500 flex items-center gap-2 mt-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <input type="month" id="monthSelector" class="bg-white/5 border-none rounded-xl p-3 text-xs font-bold text-white outline-none" onchange="changeMonth()">
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto p-8 space-y-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="glass-card p-6 rounded-[2rem]">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Income</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-bold opacity-50">₹</span>
+                        <input type="number" id="incomeInput" placeholder="0" class="bg-transparent text-2xl font-black w-full outline-none text-white" onchange="updateIncome()">
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem]">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Spends</p>
+                    <h3 class="text-2xl font-black text-rose-500" id="spendDisplay">₹0</h3>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem]">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Invested</p>
+                    <h3 class="text-2xl font-black text-emerald-500" id="investDisplay">₹0</h3>
+                </div>
+                <div class="btn-accent p-6 rounded-[2rem]">
+                    <p class="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">Current Balance</p>
+                    <h3 class="text-2xl font-black text-white" id="balanceDisplay">₹0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-card p-8 rounded-[2.5rem]">
+                    <h3 class="text-lg font-black mb-6 text-white">Spending vs Investing</h3>
+                    <div class="h-64"><canvas id="ratioChart"></canvas></div>
+                </div>
+                <div class="glass-card p-8 rounded-[2.5rem]">
+                    <h3 class="text-lg font-black mb-6 text-white">Balance Progress</h3>
+                    <div class="h-64"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-4">
+                    <div class="glass-card p-8 rounded-[2.5rem] sticky top-32">
+                        <h3 class="font-black text-xl mb-6 text-white">Record Transaction</h3>
+                        <form id="entryForm" class="space-y-4">
+                            <div class="flex bg-white/5 rounded-xl p-1 mb-2">
+                                <button type="button" onclick="setEntryType('spend')" id="typeSpend" class="type-pill flex-1 py-2 text-[10px] font-black uppercase rounded-lg">Spend</button>
+                                <button type="button" onclick="setEntryType('invest')" id="typeInvest" class="type-pill flex-1 py-2 text-[10px] font-black uppercase rounded-lg">Invest</button>
+                            </div>
+                            <select id="descInput" required class="premium-input w-full p-4 rounded-xl text-sm appearance-none cursor-pointer">
+                                <option value="" disabled selected>Select Category</option>
+                            </select>
+                            <input type="number" id="amtInput" placeholder="Amount (₹)" required class="premium-input w-full p-4 rounded-xl text-sm">
+                            <button type="submit" class="btn-accent w-full py-4 rounded-xl font-black text-xs uppercase text-white">Log Entry</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-8 space-y-8">
+                    <div class="glass-card rounded-[2.5rem] overflow-hidden">
+                        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-black text-rose-500 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                Recent Spends
+                            </h3>
+                        </div>
+                        <div class="max-h-[300px] overflow-y-auto ledger-container">
+                            <table class="w-full text-left">
+                                <thead class="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest sticky top-0">
+                                    <tr><th class="px-8 py-4">Reason</th><th class="px-8 py-4 text-right">Magnitude</th></tr>
+                                </thead>
+                                <tbody id="spendLedgerBody" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-[2.5rem] overflow-hidden">
+                        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                            <h3 class="font-black text-emerald-500 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                                Investment Portfolio
+                            </h3>
+                        </div>
+                        <div class="max-h-[300px] overflow-y-auto ledger-container">
+                            <table class="w-full text-left">
+                                <thead class="bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest sticky top-0">
+                                    <tr><th class="px-8 py-4">Asset Class</th><th class="px-8 py-4 text-right">Value</th></tr>
+                                </thead>
+                                <tbody id="investLedgerBody" class="divide-y divide-white/5"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="pt-10 pb-6 text-center border-t border-white/5">
+                <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-2">v4.3.0 Dynamic Build</p>
+                <p class="text-xs font-medium text-slate-400">@aryanshcopyright received • All Rights Reserved</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        const categories = {
+            spend: ["Rent", "Travel", "Entertainment", "Food", "Essentials", "Other"],
+            invest: ["Mutual Funds", "Equity", "Commodities", "Index"]
+        };
+
+        const themePalette = [
+            { id: 'midnight', color: '#6366f1', nature: 'blue' }, { id: 'emerald', color: '#10b981', nature: 'green' }, 
+            { id: 'rose', color: '#f43f5e', nature: 'red' }, { id: 'amber', color: '#f59e0b', nature: 'warm' },
+            { id: 'cyan', color: '#06b6d4', nature: 'blue' }, { id: 'violet', color: '#8b5cf6', nature: 'purple' },
+            { id: 'crimson', color: '#e11d48', nature: 'red' }, { id: 'lime', color: '#84cc16', nature: 'green' },
+            { id: 'fuchsia', color: '#d946ef', nature: 'purple' }, { id: 'slate', color: '#64748b', nature: 'neutral' },
+            { id: 'gold', color: '#fbbf24', nature: 'warm' }, { id: 'sky', color: '#0ea5e9', nature: 'blue' },
+            { id: 'dracula', color: '#bd93f9', nature: 'purple' }, { id: 'nord', color: '#88c0d0', nature: 'blue' },
+            { id: 'ocean', color: '#0077b6', nature: 'blue' }, { id: 'sunset', color: '#ff4d6d', nature: 'red' },
+            { id: 'forest', color: '#2d6a4f', nature: 'green' }, { id: 'cyberpunk', color: '#00ff9f', nature: 'green' },
+            { id: 'synthwave', color: '#ff71ce', nature: 'pink' }, { id: 'nebula', color: '#7b2cbf', nature: 'purple' },
+            { id: 'sakura', color: '#ffb7c5', nature: 'pink' }, { id: 'coffee', color: '#a68a64', nature: 'warm' },
+            { id: 'mint', color: '#b7e4c7', nature: 'green' }, { id: 'blood', color: '#9d0208', nature: 'red' },
+            { id: 'ghost', color: '#ffffff', nature: 'neutral' }, { id: 'toxic', color: '#ccff00', nature: 'green' },
+            { id: 'electric', color: '#3a86ff', nature: 'blue' }, { id: 'vintage', color: '#e07a5f', nature: 'warm' },
+            { id: 'malibu', color: '#4cc9f0', nature: 'blue' }, { id: 'lava', color: '#ffb703', nature: 'warm' }
+        ];
+
+        let state = {
+            user: "Aryansh",
+            pass: "aryansh.003",
+            phone: "6392097863",
+            secretCode: "2201",
+            theme: 'midnight',
+            currentMonth: new Date().toISOString().slice(0, 7),
+            data: {}
+        };
+
+        let tempOTP = "";
+        let currentEntryType = 'spend';
+        let ratioChart, trendChart;
+
+        window.onload = () => {
+            const saved = localStorage.getItem('finance_ledger_v10');
+            if (saved) state = JSON.parse(saved);
+
+            document.getElementById('monthSelector').value = state.currentMonth;
+            generateSwatches();
+
+            if (sessionStorage.getItem('isLogged') === 'true') {
+                showView('dashboardPage');
+                updateGreeting();
+                initCharts();
+                setTheme(state.theme); // Initialize current theme
+            }
+
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if(document.getElementById('usernameInput').value === state.user && 
+                   document.getElementById('passwordInput').value === state.pass) login();
+                else alert("Access Denied.");
+            });
+
+            document.getElementById('entryForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                addEntry();
+            });
+
+            document.addEventListener('click', () => {
+                const menu = document.getElementById('settingsMenu');
+                if (menu) menu.style.display = 'none';
+            });
+
+            setEntryType('spend');
+            render();
+        };
+
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            let greetingText = "GOOD EVENING";
+            if (hour < 12) greetingText = "GOOD MORNING";
+            else if (hour < 17) greetingText = "GOOD AFTERNOON";
+            const el = document.getElementById('dynamicGreeting');
+            if (el) el.innerHTML = `${greetingText} <span style="color: var(--accent);">${state.user.toUpperCase()}</span>`;
+        }
+
+        function generateSwatches() {
+            const container = document.getElementById('swatchContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            themePalette.forEach(t => {
+                const swatch = document.createElement('div');
+                swatch.className = 'theme-swatch';
+                swatch.style.background = t.color;
+                swatch.onclick = (e) => {
+                    e.stopPropagation();
+                    setTheme(t.id);
+                };
+                container.appendChild(swatch);
+            });
+        }
+
+        function setTheme(t) {
+            state.theme = t;
+            document.body.className = `theme-${t}`;
+            save();
+            if(ratioChart) updateCharts();
+            updateGreeting();
+        }
+
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('settingsMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        /**
+         * Logic to switch entry type and trigger appropriate theme change
+         */
+        function setEntryType(t) {
+            currentEntryType = t;
+            
+            // UI Toggle for pills
+            const btnSpend = document.getElementById('typeSpend');
+            const btnInvest = document.getElementById('typeInvest');
+            
+            if (t === 'spend') {
+                btnSpend.classList.add('bg-[var(--accent)]', 'text-white');
+                btnSpend.classList.remove('text-slate-500');
+                btnInvest.classList.remove('bg-[var(--accent)]', 'text-white');
+                btnInvest.classList.add('text-slate-500');
+                
+                // Switch to a random theme that isn't green-natured for Spending
+                const safeThemes = themePalette.filter(tp => tp.nature !== 'green');
+                const randomTheme = safeThemes[Math.floor(Math.random() * safeThemes.length)].id;
+                setTheme(randomTheme);
+            } else {
+                btnInvest.classList.add('bg-[var(--accent)]', 'text-white');
+                btnInvest.classList.remove('text-slate-500');
+                btnSpend.classList.remove('bg-[var(--accent)]', 'text-white');
+                btnSpend.classList.add('text-slate-500');
+
+                // Switch to a random theme that isn't red-natured for Investing
+                const safeThemes = themePalette.filter(tp => tp.nature !== 'red');
+                const randomTheme = safeThemes[Math.floor(Math.random() * safeThemes.length)].id;
+                setTheme(randomTheme);
+            }
+
+            // Update category dropdown
+            const select = document.getElementById('descInput');
+            select.innerHTML = '<option value="" disabled selected>Select Category</option>';
+            categories[t].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function changeMonth() {
+            state.currentMonth = document.getElementById('monthSelector').value;
+            render();
+            updateCharts();
+        }
+
+        function getMonth() {
+            if(!state.data[state.currentMonth]) state.data[state.currentMonth] = { income: 0, entries: [] };
+            return state.data[state.currentMonth];
+        }
+
+        function updateIncome() {
+            getMonth().income = parseFloat(document.getElementById('incomeInput').value) || 0;
+            save(); render(); updateCharts();
+        }
+
+        function addEntry() {
+            const desc = document.getElementById('descInput').value;
+            const amt = parseFloat(document.getElementById('amtInput').value);
+            if(!desc || isNaN(amt)) return;
+            getMonth().entries.push({ id: Date.now(), desc, amt, type: currentEntryType });
+            document.getElementById('amtInput').value = "";
+            save(); render(); updateCharts();
+        }
+
+        function save() { localStorage.setItem('finance_ledger_v10', JSON.stringify(state)); }
+
+        function render() {
+            const m = getMonth();
+            const spendSum = m.entries.filter(e => e.type === 'spend').reduce((s, e) => s + e.amt, 0);
+            const investSum = m.entries.filter(e => e.type === 'invest').reduce((s, e) => s + e.amt, 0);
+
+            document.getElementById('incomeInput').value = m.income || "";
+            document.getElementById('spendDisplay').textContent = "₹" + spendSum.toLocaleString('en-IN');
+            document.getElementById('investDisplay').textContent = "₹" + investSum.toLocaleString('en-IN');
+            document.getElementById('balanceDisplay').textContent = "₹" + (m.income - spendSum - investSum).toLocaleString('en-IN');
+
+            document.getElementById('spendLedgerBody').innerHTML = m.entries.filter(e => e.type === 'spend').slice().reverse().map(e => `
+                <tr class="hover:bg-rose-500/5 transition-colors">
+                    <td class="px-8 py-4 text-sm font-bold text-slate-300">${e.desc}</td>
+                    <td class="px-8 py-4 text-sm font-black text-right text-rose-400">₹${e.amt.toLocaleString('en-IN')}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="2" class="px-8 py-10 text-center text-xs text-slate-500 font-bold italic">No Spends Logged</td></tr>';
+
+            document.getElementById('investLedgerBody').innerHTML = m.entries.filter(e => e.type === 'invest').slice().reverse().map(e => `
+                <tr class="hover:bg-emerald-500/5 transition-colors">
+                    <td class="px-8 py-4 text-sm font-bold text-slate-300">${e.desc}</td>
+                    <td class="px-8 py-4 text-sm font-black text-right text-emerald-400">₹${e.amt.toLocaleString('en-IN')}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="2" class="px-8 py-10 text-center text-xs text-slate-500 font-bold italic">No Investments Active</td></tr>';
+        }
+
+        function initCharts() {
+            const ctxRatio = document.getElementById('ratioChart').getContext('2d');
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            ratioChart = new Chart(ctxRatio, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Spending', 'Investing'],
+                    datasets: [{ data: [0, 0], backgroundColor: ['#f43f5e', '#10b981'], borderWidth: 0 }]
+                },
+                options: { cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { weight: '800', size: 10 } } } } }
+            });
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: ['W1', 'W2', 'W3', 'W4'],
+                    datasets: [{ label: 'Cashflow', data: [0, 0, 0, 0], borderColor: '#6366f1', tension: 0.4, fill: true, backgroundColor: 'rgba(99, 102, 241, 0.1)' }]
+                },
+                options: { scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#475569' } } }, plugins: { legend: { display: false } } }
+            });
+            updateCharts();
+        }
+
+        function updateCharts() {
+            if(!ratioChart) return;
+            const m = getMonth();
+            const spend = m.entries.filter(e => e.type === 'spend').reduce((s, e) => s + e.amt, 0);
+            const invest = m.entries.filter(e => e.type === 'invest').reduce((s, e) => s + e.amt, 0);
+            ratioChart.data.datasets[0].data = [spend, invest];
+            ratioChart.data.datasets[0].backgroundColor = [getComputedStyle(document.body).getPropertyValue('--accent'), '#10b981'];
+            ratioChart.update();
+            trendChart.data.datasets[0].borderColor = getComputedStyle(document.body).getPropertyValue('--accent');
+            trendChart.update();
+        }
+
+        function exportToCSV() {
+            const m = getMonth();
+            const spendSum = m.entries.filter(e => e.type === 'spend').reduce((s, e) => s + e.amt, 0);
+            const investSum = m.entries.filter(e => e.type === 'invest').reduce((s, e) => s + e.amt, 0);
+            const balance = m.income - spendSum - investSum;
+
+            let csv = `FINANCIAL SUMMARY - ${state.currentMonth}\n`;
+            csv += `User,${state.user}\n\n`;
+            csv += `Total Monthly Income,${m.income}\n`;
+            csv += `Total Monthly Spending,${spendSum}\n`;
+            csv += `Total Monthly Investments,${investSum}\n`;
+            csv += `Remaining Balance,${balance}\n\n`;
+            
+            csv += `DETAILED TRANSACTIONS\n`;
+            csv += `Category,Type,Amount (INR)\n`;
+            m.entries.forEach(e => {
+                csv += `"${e.desc}",${e.type.toUpperCase()},${e.amt}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.setAttribute('download', `EquityPlus_Report_${state.currentMonth}.csv`);
+            a.click();
+        }
+
+        function login() { sessionStorage.setItem('isLogged', 'true'); showView('dashboardPage'); updateGreeting(); initCharts(); setTheme(state.theme); }
+        function handleLogout() { sessionStorage.removeItem('isLogged'); location.reload(); }
+        function showView(id) {
+            document.getElementById('loginPage').classList.add('hidden-view');
+            document.getElementById('dashboardPage').classList.add('hidden-view');
+            document.getElementById(id).classList.remove('hidden-view');
+        }
+
+        function showRecoveryUI() { 
+            document.getElementById('loginMainUI').classList.add('hidden'); 
+            document.getElementById('recoveryUI').classList.remove('hidden'); 
+            document.getElementById('secretCodeInput').value = "";
+        }
+
+        function hideRecoveryUI() { 
+            document.getElementById('loginMainUI').classList.remove('hidden'); 
+            document.getElementById('recoveryUI').classList.add('hidden'); 
+            document.getElementById('recoveryStep1').classList.remove('hidden');
+            document.getElementById('recoveryStep2').classList.add('hidden');
+        }
+        
+        function verifySecretCodeAndSendOTP() {
+            const inputSecret = document.getElementById('secretCodeInput').value;
+            if(inputSecret !== state.secretCode) { 
+                alert("Unauthorized Secret Code. Access Blocked."); 
+                return; 
+            }
+            tempOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('otpDisplay').textContent = tempOTP;
+            document.getElementById('smsNotification').classList.add('active');
+            document.getElementById('recoveryStep1').classList.add('hidden');
+            document.getElementById('recoveryStep2').classList.remove('hidden');
+        }
+
+        function verifyOTP() { 
+            if(document.getElementById('otpInput').value.replace(/\s/g, '') === tempOTP) login(); 
+            else alert("Invalid security code.");
+        }
+    </script>
+</body>
+</html>
